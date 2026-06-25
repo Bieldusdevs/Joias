@@ -1,121 +1,128 @@
-# Noir Atelier — alta joalheria editorial premium
+# BONITA — Next.js Gold Jewelry E-commerce
 
-Site completo de joias de luxo com estética editorial, atmosfera sofisticada e painel administrativo fácil de usar.
+Site premium de e-commerce de peças de ouro com identidade visual **rosa bebê + branco + dourado**, experiência cinematográfica, blur refinado e animações suaves.
 
-## Incluído
+## Stack
 
-- Landing page premium com modelo editorial usando joias negras
-- Fotografias macro para vitrine de produtos
-- Paleta: preto absoluto, grafite, ônix e prata escura
-- Glassmorphism sutil
-- WebGL/Three.js + React Three Fiber para fundo e efeitos visuais
-- GLSL shaders
-- GSAP + ScrollTrigger
-- Lenis
-- Framer Motion
-- WebGPU com fallback
-- Vídeos fullscreen
-- Carrinho e checkout
-- Painel admin em `/admin`
-- Edição de produtos, descrições, valores, fotos, vídeos, estoque e tags
-- Edição de contacto, email, WhatsApp, Instagram, Pinterest, TikTok e morada
-- Upload/troca de foto dos produtos pelo painel
-- Upload/troca da foto principal da home pelo painel
-- Logs de auditoria
-- RBAC/cargos administrativos
-- Rate limiting
-- Cookies HttpOnly
-- CSRF
-- Sanitização anti-XSS
-- Queries parametrizadas para banco SQL
-- Sessões administrativas com expiração automática
-- Headers de segurança via middleware
+- **Next.js / React App Router**
+- **TypeScript**
+- **Tailwind CSS**
+- **Framer Motion** para loader, transições, cursor, modais e blur motion
+- **GSAP + ScrollTrigger** para animações editoriais em scroll
+- **GSAP Draggable** para intro drag-and-drop 2D do anel na mão
+- **Howler.js** para som elegante de cristal
+- **Stripe Checkout** via API Route
+- **Sanity CMS-ready** para catálogo/editorial
+- **Prisma + PostgreSQL-ready** para banco próprio, pedidos e produtos
 
-## WAF
+## Alterações de identidade
 
-O WAF/Cloudflare foi desativado/removido do projeto. O site não depende de configuração WAF para funcionar.
+- Marca renomeada para **BONITA**.
+- Logo/wordmark BONITA aplicada no loader, header e footer.
+- A bolinha do **i** foi transformada em um **diamante dourado**.
+- Paleta alterada para rosa bebê, branco, dourado e tons suaves de pele/pó.
+- Todas as joias renderizadas em 3D foram removidas da experiência visual.
+- A área de produto agora usa fotografia macro de peças de ouro com zoom, blur e parallax leve.
 
-## Rodar localmente
+## Entrada cinematográfica drag-and-drop
+
+Implementada em:
+
+```txt
+app/components/IntroExperience.tsx
+```
+
+Recursos:
+
+- Imagem ultra realista da mão em `public/assets/hand-intro.png`.
+- Anel de ouro PNG/cutout em `public/assets/ring-drag.png`.
+- Drag and drop 2D com **GSAP Draggable** no desktop.
+- Versão mobile simplificada: toque no anel para continuar.
+- Botão obrigatório **Skip intro**.
+- Glow no encaixe, partículas douradas, flash, escurecimento rápido, som de cristal com **Howler.js** e transição blur + zoom para o site.
+- Áudio local em `public/audio/crystal.wav`.
+
+## Requisitos
+
+- Node.js **22.12+** recomendado, compatível com a versão atual do Sanity Studio.
+
+## Como rodar localmente
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
 Abra:
 
-```txt
-http://localhost:3000
-```
-
-Painel admin:
-
-```txt
-http://localhost:3000/admin
-```
-
-Em desenvolvimento, caso não configure `ADMIN_USERS_JSON`, existe um usuário local simples:
-
-```txt
-email: admin@noir.local
-senha: admin123
-```
-
-Não existe usuário padrão em produção.
-
-## Configurar admin em produção
-
-Gere o hash da senha:
-
 ```bash
-node scripts/hash-password.mjs "sua-senha-forte"
-```
-
-Configure na Vercel:
-
-```env
-ADMIN_SESSION_SECRET=uma-string-aleatoria-longa
-ADMIN_USERS_JSON=[{"id":"owner","email":"admin@seudominio.com","passwordHash":"HASH_GERADO","role":"super_admin","enabled":true}]
-```
-
-Cargos disponíveis:
-
-- `super_admin`: edita tudo e vê auditoria
-- `editor`: edita produtos
-- `support`: acesso limitado/leitura
-
-## MFA opcional
-
-O login está facilitado por padrão com email e senha. Se quiser ativar MFA no futuro:
-
-```env
-ADMIN_REQUIRE_MFA=true
-ADMIN_USERS_JSON=[{"id":"owner","email":"admin@seudominio.com","passwordHash":"HASH_GERADO","role":"super_admin","mfaSecret":"SUA_SECRET_BASE32","enabled":true}]
-```
-
-## Persistência das edições
-
-Para admin persistente em produção, conecte um banco Postgres/Neon/Vercel Postgres e configure:
-
-```env
-POSTGRES_URL=sua_url_postgres
-```
-
-Sem banco, o projeto usa fallback local para desenvolvimento.
-
-## Pagamentos
-
-Configure:
-
-```env
-NEXT_PUBLIC_SITE_URL=https://seu-dominio.com
-STRIPE_SECRET_KEY=sua_chave_secreta
+http://localhost:3000
 ```
 
 ## Deploy na Vercel
 
-```bash
-npm run build
+1. Suba o projeto para GitHub/GitLab/Bitbucket.
+2. Importe na Vercel.
+3. Framework: **Next.js**.
+4. Build command: `npm run build`.
+5. Output: padrão da Vercel para Next.js.
+6. Configure as variáveis de ambiente em **Project Settings > Environment Variables**.
+
+Variáveis principais:
+
+```env
+NEXT_PUBLIC_SITE_URL=https://seu-dominio.vercel.app
+STRIPE_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_SANITY_PROJECT_ID=...
+NEXT_PUBLIC_SANITY_DATASET=production
+DATABASE_URL=postgresql://...
 ```
 
-Depois suba para GitHub e importe na Vercel.
+## Stripe
+
+O endpoint está em:
+
+```txt
+app/api/checkout/route.ts
+```
+
+Enquanto `STRIPE_SECRET_KEY` não estiver configurada, o checkout retorna modo demonstração. Para pagamento real:
+
+1. Crie produtos/preços no Stripe.
+2. Substitua `stripePriceId` em `app/lib/products.ts` pelos IDs reais `price_...`.
+3. Configure `STRIPE_SECRET_KEY` na Vercel.
+
+## Estrutura principal
+
+```txt
+app/
+  api/checkout/route.ts
+  components/
+    Cursor.tsx
+    IntroExperience.tsx
+    Loader.tsx
+    LuxuryStore.tsx
+  lib/
+    products.ts
+    sanity.ts
+    stripe.ts
+  types/product.ts
+  globals.css
+  layout.tsx
+  page.tsx
+public/assets/
+  hero-jewelry.png
+  ring.png
+  necklace.png
+  earrings.png
+  bracelet.png
+  hand-intro.png
+  ring-drag.png
+public/audio/
+  crystal.wav
+prisma/schema.prisma
+sanity/product.schema.ts
+```

@@ -1,30 +1,29 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "Noir Atelier | Alta joalheria em pedras negras",
-  description:
-    "Site de alta joalheria com estética editorial, pedras negras, prata escura e experiência premium.",
-  icons: {
-    icon: "/favicon.svg"
-  },
+  title: 'BONITA — Gold Jewelry E-Commerce',
+  description: 'BONITA é uma joalheria contemporânea de peças de ouro com estética rosa bebê, branco, luxo suave e experiência imersiva.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bonita-jewelry.vercel.app'),
   openGraph: {
-    title: "Noir Atelier",
-    description: "Alta joalheria em pedras negras com experiência editorial premium.",
-    type: "website"
-  }
-};
+    title: 'BONITA — Soft Gold, Made to Glow',
+    description: 'Peças de ouro em uma experiência premium rosa bebê e branca.',
+    type: 'website',
+    images: ['/assets/hero-jewelry.png']
+  },
+  robots: { index: true, follow: true }
+}
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#050403"
-};
+  themeColor: '#FFF7FA',
+  width: 'device-width',
+  initialScale: 1
+}
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt">
-      <body>{children}</body>
+    <html lang="pt-BR">
+      <body className="luxury-grain font-sans antialiased">{children}</body>
     </html>
-  );
+  )
 }

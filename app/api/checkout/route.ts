@@ -1,91 +1,57 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { getContent } from "@/lib/contentStore";
-
-export const runtime = "nodejs";
-
-type IncomingItem = {
-  id: string;
-  quantity: number;
-};
+import { NextResponse } from 'next/server'
+import { products } from '@/app/lib/products'
+import { stripe } from '@/app/lib/stripe'
 
 export async function POST(request: Request) {
-  try {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
+  const body = await request.json().catch(() => null)
+  const items = body?.items as Array<{ id: string; quantity: number; material?: string }> | undefined
 
-    if (!secretKey) {
-      return NextResponse.json(
-        { error: "Checkout temporariamente indisponível. Tente novamente mais tarde." },
-        { status: 500 }
-      );
-    }
-
-    const body = (await request.json()) as { items?: IncomingItem[] };
-    const items = body.items;
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: "O carrinho está vazio." }, { status: 400 });
-    }
-
-    const { products } = await getContent();
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-
-    for (const item of items) {
-      const product = products.find((candidate) => candidate.id === String(item.id));
-      const quantity = Math.max(1, Math.min(20, Number(item.quantity || 1)));
-
-      if (!product) continue;
-
-      lineItems.push({
-        quantity,
-        price_data: {
-          currency: "eur",
-          unit_amount: product.price,
-          product_data: {
-            name: product.name,
-            description: `${product.categoryLabel} · ${product.coating}`,
-            metadata: {
-              productId: product.id,
-              category: product.category
-            }
-          }
-        }
-      });
-    }
-
-    if (lineItems.length === 0) {
-      return NextResponse.json({ error: "Não foi possível validar os produtos." }, { status: 400 });
-    }
-
-    const stripe = new Stripe(secretKey);
-
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      request.headers.get("origin") ||
-      new URL(request.url).origin;
-
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      locale: "pt",
-      allow_promotion_codes: true,
-      billing_address_collection: "auto",
-      phone_number_collection: {
-        enabled: true
-      },
-      shipping_address_collection: {
-        allowed_countries: ["PT", "ES", "FR", "DE", "IT", "BR"]
-      },
-      line_items: lineItems,
-      success_url: `${origin}/checkout/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/checkout/cancelado`
-    });
-
-    return NextResponse.json({ url: session.url });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Não foi possível iniciar o checkout neste momento." },
-      { status: 500 }
-    );
+  if (!items?.length) {
+    return NextResponse.json({ error: 'Carrinho vazio.' }, { status: 400 })
   }
+
+  const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  if (!stripe || !process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({
+      mode: 'demo',
+      message: 'Checkout em modo demonstração. Configure STRIPE_SECRET_KEY e stripePriceId dos produtos para pagamento real.'
+    })
+  }
+
+  const lineItems = items.map((item) => {
+    const product = products.find((candidate) => candidate.id === item.id)
+    if (!product) throw new Error(`Produto inválido: ${item.id}`)
+
+    if (product.stripePriceId && !product.stripePriceId.startsWith('price_replace')) {
+      return { price: product.stripePriceId, quantity: item.quantity }
+    }
+
+    return {
+      quantity: item.quantity,
+      price_data: {
+        currency: 'eur',
+        unit_amount: product.price * 100,
+        product_data: {
+          name: product.name,
+          description: item.material ? `${product.description} Material: ${item.material}` : product.description,
+          images: [`${origin}${product.image}`]
+        }
+      }
+    }
+  })
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    line_items: lineItems,
+    success_url: `${origin}/?success=true`,
+    cancel_url: `${origin}/?canceled=true`,
+    billing_address_collection: 'required',
+    shipping_address_collection: { allowed_countries: ['PT', 'FR', 'IT', 'ES', 'US', 'GB'] },
+    metadata: {
+      brand: 'BONITA'
+    }
+  })
+
+  return NextResponse.json({ url: session.url })
 }

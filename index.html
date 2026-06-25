@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maison Aurum — High Jewelry E-Commerce</title>
+  <meta name="description" content="Maison Aurum é uma experiência premium de e-commerce de joias contemporâneas: anéis, colares, brincos e pulseiras em ouro, diamantes e materiais de origem ética.">
+  <meta name="theme-color" content="#050505">
+  <meta property="og:title" content="Maison Aurum — Timeless Elegance, Crafted for Eternity">
+  <meta property="og:description" content="Joalheria contemporânea de alto padrão com experiência imersiva, editorial e sofisticada.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/hero-jewelry.png">
+  <link rel="preload" href="assets/hero-jewelry.png" as="image">
+  <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "name": "Maison Aurum",
+      "description": "International contemporary high-jewelry maison.",
+      "url": "https://maison-aurum.vercel.app",
+      "sameAs": ["https://www.instagram.com/", "https://www.pinterest.com/"],
+      "makesOffer": [
+        {"@type":"Offer","itemOffered":{"@type":"Product","name":"Éternel Solitaire Ring"}},
+        {"@type":"Offer","itemOffered":{"@type":"Product","name":"Lumière Diamond Necklace"}}
+      ]
+    }
+  </script>
+</head>
+<body>
+  <div class="loader" aria-hidden="true">
+    <div class="loader__orb"></div>
+    <div class="loader__brand">MAISON AURUM</div>
+    <div class="loader__line"><span></span></div>
+  </div>
+
+  <div class="cursor" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="#hero" aria-label="Maison Aurum Home">
+      <span>Maison</span><i></i><span>Aurum</span>
+    </a>
+    <nav class="nav" data-nav>
+      <a href="#collection">Coleção</a>
+      <a href="#atelier">Atelier</a>
+      <a href="#trust">Autenticidade</a>
+      <a href="#journal">Journal</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-button" data-open-search aria-label="Abrir busca">Search</button>
+      <button class="cart-trigger" data-open-cart aria-label="Abrir carrinho">Bag <span data-cart-count>0</span></button>
+      <button class="menu-button" data-menu aria-label="Abrir menu"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main>
+    <section id="hero" class="hero" aria-label="Landing Page">
+      <div class="hero__media" data-parallax="0.16">
+        <img src="assets/hero-jewelry.png" alt="Joias de alto padrão sobre mármore preto com reflexos dourados" decoding="async">
+        <div class="hero__shine"></div>
+      </div>
+      <div class="hero__content">
+        <p class="eyebrow reveal">High Jewelry / 2026</p>
+        <h1 class="reveal">Timeless Elegance,<br>Crafted for Eternity</h1>
+        <p class="hero__copy reveal">Uma maison contemporânea onde diamantes éticos, ouro luminoso e artesanato excepcional encontram a linguagem silenciosa da alta moda.</p>
+        <div class="hero__cta reveal">
+          <a class="button button--gold" href="#collection">Explore Collection</a>
+          <button class="button button--ghost" data-open-product="1">Ver assinatura</button>
+        </div>
+      </div>
+      <div class="hero__ticker" aria-hidden="true">
+        <span>Ethical Diamonds</span><span>18k Gold</span><span>Hand Finished</span><span>Made to Last</span>
+      </div>
+    </section>
+
+    <section class="intro section-pad">
+      <div class="intro__number reveal">01</div>
+      <h2 class="reveal">Luxo silencioso, lapidado para uma nova geração de colecionadores.</h2>
+      <p class="reveal">Inspirada por maisons icônicas e pelo ritmo editorial das passarelas, a Maison Aurum constrói uma experiência de compra íntima, tátil e cinematográfica.</p>
+    </section>
+
+    <section id="collection" class="collection section-pad" aria-label="Coleção em destaque">
+      <div class="section-head">
+        <p class="eyebrow reveal">Featured Collection</p>
+        <h2 class="reveal">Objects of Light</h2>
+        <button class="text-link reveal" data-filter="all">Ver todos</button>
+      </div>
+      <div class="collection-grid" data-products></div>
+    </section>
+
+    <section id="product-showcase" class="product-story section-pad" aria-label="Página de produto">
+      <div class="product-gallery reveal">
+        <div class="macro-frame" data-tilt>
+          <img src="assets/ring.png" loading="lazy" alt="Macro fotografia do anel Éternel Solitaire">
+          <span class="spec spec--one">VVS Diamond</span>
+          <span class="spec spec--two">18k Gold</span>
+        </div>
+        <div class="thumb-row">
+          <button><img src="assets/ring.png" loading="lazy" alt="Detalhe do anel"></button>
+          <button><img src="assets/necklace.png" loading="lazy" alt="Detalhe do colar"></button>
+          <button><img src="assets/bracelet.png" loading="lazy" alt="Detalhe da pulseira"></button>
+        </div>
+      </div>
+      <article class="product-detail reveal">
+        <p class="eyebrow">Signature Product</p>
+        <h2>Éternel Solitaire Ring</h2>
+        <p class="price">€ 12.800</p>
+        <p>Um solitário arquitetônico com diamante central selecionado por brilho, proporção e rastreabilidade. Criado para atravessar estações, heranças e cerimônias.</p>
+        <div class="materials" role="group" aria-label="Selecione o material">
+          <button class="active" data-material="Ouro 18k">Ouro 18k</button>
+          <button data-material="Prata Palladium">Prata</button>
+          <button data-material="Diamante VVS">Diamante</button>
+        </div>
+        <div class="detail-actions">
+          <button class="button button--gold" data-buy-featured>Comprar agora</button>
+          <button class="button button--ghost" data-open-product="1">Detalhes</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="atelier" class="atelier" aria-label="História da marca">
+      <div class="atelier__panel atelier__panel--dark">
+        <div data-parallax="-0.08">
+          <p class="eyebrow reveal">Atelier Story</p>
+          <h2 class="reveal">Every stone has a silence. We shape it into memory.</h2>
+        </div>
+      </div>
+      <div class="atelier__panel atelier__panel--image" data-parallax="0.12">
+        <img src="assets/necklace.png" loading="lazy" alt="Colar de diamantes em cenário editorial">
+      </div>
+      <div class="atelier__text section-pad">
+        <p class="reveal">Fundada entre Lisboa, Paris e Milão, a Maison Aurum nasce da obsessão por proporção, luz e permanência. Cada peça passa por desenho manual, prototipagem lenta e polimento final feito por mestres ourives.</p>
+        <p class="reveal">Nossa estética evita excesso: linhas limpas, metais nobres e pedras selecionadas para refletir personalidade, não tendências.</p>
+      </div>
+    </section>
+
+    <section id="trust" class="trust section-pad" aria-label="Efeito de confiança">
+      <div class="section-head">
+        <p class="eyebrow reveal">Assurance</p>
+        <h2 class="reveal">Proof of provenance</h2>
+      </div>
+      <div class="trust-grid">
+        <article class="trust-card reveal">
+          <span>01</span>
+          <h3>Certificado de Autenticidade</h3>
+          <p>Documento digital e físico com origem, quilatagem, lote e assinatura do atelier.</p>
+        </article>
+        <article class="trust-card reveal">
+          <span>02</span>
+          <h3>Artesanato Premium</h3>
+          <p>Peças finalizadas à mão, testadas em acabamento, simetria e resistência de cravação.</p>
+        </article>
+        <article class="trust-card reveal">
+          <span>03</span>
+          <h3>Ethical Sourcing</h3>
+          <p>Diamantes rastreáveis e metais adquiridos com compromisso socioambiental.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="journal" class="journal section-pad" aria-label="Editorial journal">
+      <p class="eyebrow reveal">Maison Journal</p>
+      <div class="journal__wrap">
+        <h2 class="reveal">A private appointment with light, texture and intention.</h2>
+        <a class="button button--ghost reveal" href="mailto:concierge@maisonaurum.com">Agendar consulta</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <a class="brand brand--footer" href="#hero"><span>Maison</span><i></i><span>Aurum</span></a>
+      <p>Contemporary high jewelry, made with ethical sourcing.</p>
+    </div>
+    <form class="newsletter" data-newsletter>
+      <label for="email">Newsletter privada</label>
+      <div><input id="email" name="email" type="email" placeholder="seu@email.com" required><button type="submit">Entrar</button></div>
+    </form>
+    <nav class="footer-links" aria-label="Links do rodapé">
+      <a href="#collection">Collection</a>
+      <a href="#atelier">Atelier</a>
+      <a href="#trust">Certificates</a>
+      <a href="https://instagram.com" rel="noreferrer">Instagram</a>
+    </nav>
+  </footer>
+
+  <dialog class="modal product-modal" data-product-modal aria-label="Preview luxuoso do produto">
+    <button class="modal-close" data-close-product aria-label="Fechar">×</button>
+    <div class="modal-grid">
+      <div class="modal-media" data-modal-media></div>
+      <div class="modal-info">
+        <p class="eyebrow" data-modal-category></p>
+        <h2 data-modal-title></h2>
+        <p class="price" data-modal-price></p>
+        <p data-modal-description></p>
+        <div class="materials" data-modal-materials></div>
+        <button class="button button--gold" data-add-modal>Adicionar ao carrinho</button>
+      </div>
+    </div>
+  </dialog>
+
+  <aside class="cart" data-cart aria-label="Carrinho de compras" aria-hidden="true">
+    <div class="cart__head">
+      <div><p class="eyebrow">Shopping Bag</p><h2>Sua seleção</h2></div>
+      <button data-close-cart aria-label="Fechar carrinho">×</button>
+    </div>
+    <div class="cart__items" data-cart-items></div>
+    <div class="cart__summary">
+      <div><span>Subtotal</span><strong data-cart-total>€ 0</strong></div>
+      <button class="button button--gold" data-checkout>Checkout seguro</button>
+      <p>Checkout demonstrativo pronto para integrar Stripe, Shopify Headless ou Vercel Functions.</p>
+    </div>
+  </aside>
+  <div class="scrim" data-scrim></div>
+
+  <dialog class="modal checkout-modal" data-checkout-modal aria-label="Checkout">
+    <button class="modal-close" data-close-checkout aria-label="Fechar">×</button>
+    <form class="checkout-form" data-checkout-form>
+      <p class="eyebrow">Secure Checkout</p>
+      <h2>Finalizar compra</h2>
+      <div class="form-grid">
+        <label>Nome completo<input required name="name" placeholder="Nome"></label>
+        <label>Email<input required type="email" name="email" placeholder="email@exemplo.com"></label>
+        <label>País<input required name="country" placeholder="Portugal"></label>
+        <label>Cidade<input required name="city" placeholder="Lisboa"></label>
+        <label class="full">Endereço<input required name="address" placeholder="Rua, número, código postal"></label>
+      </div>
+      <button class="button button--gold" type="submit">Confirmar pedido</button>
+      <p class="checkout-note">Modo demonstração: nenhum pagamento real será processado.</p>
+    </form>
+  </dialog>
+
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
