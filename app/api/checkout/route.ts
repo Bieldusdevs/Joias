@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { findProduct } from "@/lib/products";
+import { getContent } from "@/lib/contentStore";
 
 export const runtime = "nodejs";
 
@@ -27,10 +27,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "O carrinho está vazio." }, { status: 400 });
     }
 
+    const { products } = await getContent();
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
     for (const item of items) {
-      const product = findProduct(String(item.id));
+      const product = products.find((candidate) => candidate.id === String(item.id));
       const quantity = Math.max(1, Math.min(20, Number(item.quantity || 1)));
 
       if (!product) continue;

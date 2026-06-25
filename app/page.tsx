@@ -7,8 +7,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { categories, products } from "@/lib/products";
-import type { Category, Product } from "@/lib/products";
+import { categories, defaultSettings, products as defaultProducts } from "@/lib/products";
+import type { Category, Product, SiteSettings } from "@/lib/products";
 import { money } from "@/lib/money";
 
 type CartLine = {
@@ -83,6 +83,8 @@ const fragmentShader = `
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<Category | "todos">("todos");
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [catalog, setCatalog] = useState<Product[]>(defaultProducts);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [cartOpen, setCartOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -99,6 +101,15 @@ export default function Home() {
         setCart([]);
       }
     }
+
+    fetch("/api/content", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((content) => {
+        if (!content) return;
+        setCatalog(content.products || defaultProducts);
+        setSettings(content.settings || defaultSettings);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -193,17 +204,17 @@ export default function Home() {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "todos") return products;
-    return products.filter((product) => product.category === selectedCategory);
-  }, [selectedCategory]);
+    if (selectedCategory === "todos") return catalog;
+    return catalog.filter((product) => product.category === selectedCategory);
+  }, [catalog, selectedCategory]);
 
   const cartLines = useMemo<CartViewLine[]>(
     () =>
       cart.flatMap((line) => {
-        const product = products.find((p) => p.id === line.id);
+        const product = catalog.find((p) => p.id === line.id);
         return product ? [{ ...line, product }] : [];
       }),
-    [cart]
+    [cart, catalog]
   );
 
   const cartTotal = cartLines.reduce(
@@ -281,12 +292,12 @@ export default function Home() {
       <WebGPUSheen />
       <CustomCursor />
 
-      <Header cartCount={cartCount} onCartClick={() => setCartOpen(true)} />
+      <Header settings={settings} cartCount={cartCount} onCartClick={() => setCartOpen(true)} />
 
       <section className="hero-cinema">
         <video
           className="hero-video"
-          src="/videos/colar-riviera.mp4"
+          src={catalog[0]?.video || "/videos/colar-riviera.mp4"}
           autoPlay
           muted
           loop
@@ -296,27 +307,22 @@ export default function Home() {
         <div className="hero-noise" />
         <div className="section-pad hero-inner">
           <div className="hero-copy">
-            <p className="eyebrow reveal">Aurora Joias · banho de ouro 18k</p>
-            <h1 className="reveal metal-sweep">Joias banhadas a ouro com presença de alta joalharia.</h1>
-            <p className="hero-text reveal">
-              Uma coleção luminosa, minimalista e marcante — criada para transformar o ritual de compra
-              em uma experiência sofisticada, silenciosa e memorável.
-            </p>
+            <p className="eyebrow reveal">{settings.brandName} · alta joalheria noir</p>
+            <h1 className="reveal metal-sweep">{settings.heroTitle}</h1>
+            <p className="hero-text reveal">{settings.heroSubtitle}</p>
             <div className="hero-actions reveal">
               <a className="button primary" href="#colecao">
                 Comprar coleção
               </a>
               <a className="button ghost" href="#atelier">
-                Ver acabamento 3D
+                Ver atelier WebGL
               </a>
             </div>
           </div>
 
-          <div className="hero-sculpture reveal" aria-label="Renderização 3D de joia">
-            <Canvas camera={{ position: [0, 0.28, 4.6], fov: 42 }} dpr={[1, 1.75]}>
-              <JewelryLights />
-              <JewelrySculpture variant="necklace" />
-            </Canvas>
+          <div className="hero-sculpture reveal" aria-label="Editorial de alta joalheria">
+            <img src="/editorial/hero-model.png" alt="Modelo editorial usando colar e brincos de pedras negras" />
+            <div className="hero-portrait-shine" />
           </div>
         </div>
       </section>
@@ -325,14 +331,14 @@ export default function Home() {
         <div className="maison-kicker scroll-rise">01 · Maison</div>
         <div className="maison-text scroll-rise">
           <p>
-            O brilho não precisa gritar. Cada peça da Aurora foi pensada para refletir luz com delicadeza,
+            O brilho não precisa gritar. Cada peça da {settings.brandName} foi pensada para refletir luz com delicadeza,
             textura metálica e proporção elegante — do primeiro olhar ao último detalhe.
           </p>
         </div>
         <div className="maison-metrics scroll-rise">
-          <span><strong>18k</strong> banho premium</span>
-          <span><strong>8</strong> peças selecionadas</span>
-          <span><strong>24h</strong> preparação cuidadosa</span>
+          <span><strong>Onyx</strong> pedras negras</span>
+          <span><strong>6</strong> peças editoriais</span>
+          <span><strong>Private</strong> concierge</span>
         </div>
       </section>
 
@@ -348,7 +354,7 @@ export default function Home() {
         />
         <div className="cinema-overlay">
           <p className="eyebrow scroll-rise">Filme da coleção</p>
-          <h2 className="scroll-rise metal-sweep">Reflexos dourados em movimento fullscreen.</h2>
+          <h2 className="scroll-rise metal-sweep">Reflexos de prata escura em movimento fullscreen.</h2>
         </div>
       </section>
 
@@ -398,9 +404,9 @@ export default function Home() {
         </div>
 
         <div className="sculpture-grid">
-          <SculptureCard title="Anéis" variant="ring" />
-          <SculptureCard title="Colares" variant="necklace" />
-          <SculptureCard title="Pingentes" variant="pendant" />
+          <SculptureCard title="Colar Noir" variant="necklace" />
+          <SculptureCard title="Pingente Eclipse" variant="pendant" />
+          <SculptureCard title="Brincos Onyx" variant="earrings" />
         </div>
       </section>
 
@@ -409,12 +415,12 @@ export default function Home() {
           <p className="eyebrow">04 · Acabamento</p>
           <h2 className="metal-sweep">Glassmorphism sutil, preto absoluto e luz metálica.</h2>
           <p>
-            O desenho visual valoriza contraste, espaços amplos e reflexos dourados. A interface fica
+            O desenho visual valoriza contraste, espaços amplos e reflexos em prata escura. A interface fica
             discreta para que as peças sejam protagonistas da experiência.
           </p>
         </div>
         <div className="craft-list">
-          <Feature title="Banho luminoso" text="Superfícies douradas com aparência polida e acabamento sofisticado." />
+          <Feature title="Metal luminoso" text="Superfícies em prata escura com aparência polida e acabamento sofisticado." />
           <Feature title="Compra fluida" text="Carrinho rápido, checkout seguro e navegação sem fricção." />
           <Feature title="Experiência cinematográfica" text="Vídeos fullscreen, movimento por scroll e profundidade WebGL." />
           <Feature title="Entrega com cuidado" text="Peças preparadas para envio com atenção à apresentação e conservação." />
@@ -444,7 +450,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
+      <Footer settings={settings} />
 
       <CartDrawer
         open={cartOpen}
@@ -461,17 +467,19 @@ export default function Home() {
 }
 
 function Header({
+  settings,
   cartCount,
   onCartClick
 }: {
+  settings: SiteSettings;
   cartCount: number;
   onCartClick: () => void;
 }) {
   return (
     <header className="site-header">
-      <a className="brand" href="#" aria-label="Aurora Joias">
-        <span>A</span>
-        Aurora
+      <a className="brand" href="#" aria-label={settings.brandName}>
+        <span>{settings.brandName.slice(0, 1)}</span>
+        {settings.brandName}
       </a>
 
       <nav>
@@ -499,7 +507,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
       whileHover={{ y: -8 }}
       transition={{ duration: 0.35 }}
     >
-      <ProductVideo product={product} />
+      <ProductMedia product={product} />
 
       <div className="product-info">
         <div>
@@ -525,25 +533,17 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
   );
 }
 
-function ProductVideo({ product }: { product: Product }) {
+function ProductMedia({ product }: { product: Product }) {
   const [failed, setFailed] = useState(false);
 
   return (
     <div className="video-box">
       {!failed ? (
-        <video
-          src={product.video}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          onError={() => setFailed(true)}
-        />
+        <img src={product.image} alt={product.name} onError={() => setFailed(true)} />
       ) : (
         <div className="video-fallback">
           <span>{product.name}</span>
-          <small>Pré-visualização cinematográfica</small>
+          <small>Fotografia macro editorial</small>
         </div>
       )}
       <div className="video-glow" />
@@ -671,7 +671,7 @@ function SculptureCard({
   variant
 }: {
   title: string;
-  variant: "ring" | "necklace" | "pendant";
+  variant: "necklace" | "pendant" | "earrings";
 }) {
   return (
     <motion.div className="sculpture-card scroll-rise" whileHover={{ y: -8 }}>
@@ -699,7 +699,7 @@ function JewelryLights() {
   );
 }
 
-function JewelrySculpture({ variant }: { variant: "ring" | "necklace" | "pendant" }) {
+function JewelrySculpture({ variant }: { variant: "necklace" | "pendant" | "earrings" }) {
   const group = useRef<THREE.Group>(null);
   const gold = "#f4c26e";
 
@@ -711,19 +711,6 @@ function JewelrySculpture({ variant }: { variant: "ring" | "necklace" | "pendant
 
   return (
     <group ref={group}>
-      {variant === "ring" ? (
-        <>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[1.06, 0.12, 48, 160]} />
-            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.16} clearcoat={1} clearcoatRoughness={0.08} />
-          </mesh>
-          <mesh position={[0, 0.98, 0]} rotation={[0.7, 0.2, 0.8]}>
-            <octahedronGeometry args={[0.28, 2]} />
-            <meshPhysicalMaterial color="#fff1c6" metalness={0.2} roughness={0.05} transmission={0.15} clearcoat={1} />
-          </mesh>
-        </>
-      ) : null}
-
       {variant === "necklace" ? (
         <>
           <mesh scale={[1.12, 1.42, 1]} rotation={[Math.PI / 2, 0, 0]}>
@@ -764,24 +751,47 @@ function JewelrySculpture({ variant }: { variant: "ring" | "necklace" | "pendant
           </mesh>
         </>
       ) : null}
+
+      {variant === "earrings" ? (
+        <>
+          <mesh position={[-0.46, 0.48, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.2, 0.022, 24, 80]} />
+            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.14} clearcoat={1} />
+          </mesh>
+          <mesh position={[0.46, 0.48, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.2, 0.022, 24, 80]} />
+            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.14} clearcoat={1} />
+          </mesh>
+          <mesh position={[-0.46, -0.12, 0]} rotation={[0.35, 0.25, 0.2]}>
+            <octahedronGeometry args={[0.34, 2]} />
+            <meshPhysicalMaterial color="#0b0b0d" metalness={0.6} roughness={0.08} clearcoat={1} />
+          </mesh>
+          <mesh position={[0.46, -0.12, 0]} rotation={[0.35, -0.25, -0.2]}>
+            <octahedronGeometry args={[0.34, 2]} />
+            <meshPhysicalMaterial color="#0b0b0d" metalness={0.6} roughness={0.08} clearcoat={1} />
+          </mesh>
+        </>
+      ) : null}
     </group>
   );
 }
 
-function Footer() {
+function Footer({ settings }: { settings: SiteSettings }) {
   return (
     <footer className="footer">
       <div>
         <a className="brand footer-brand" href="#">
-          <span>A</span>
-          Aurora
+          <span>{settings.brandName.slice(0, 1)}</span>
+          {settings.brandName}
         </a>
-        <p>Joias banhadas a ouro com experiência digital premium.</p>
+        <p>{settings.address}</p>
+        <p>{settings.contactEmail} · {settings.contactPhone}</p>
       </div>
       <div className="footer-links">
         <a href="#maison">Maison</a>
         <a href="#colecao">Coleção</a>
         <a href="#atelier">Atelier</a>
+        {settings.instagram ? <a href={settings.instagram}>Instagram</a> : null}
       </div>
     </footer>
   );

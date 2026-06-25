@@ -1,39 +1,37 @@
-# Aurora Joias — site completo de vendas de joias banhadas a ouro
+# Noir Atelier — alta joalheria editorial premium
 
-Projeto completo com frontend e backend em Next.js, pronto para GitHub e deploy na Vercel.
+Site completo de joias de luxo com estética editorial, atmosfera sofisticada e painel administrativo seguro.
 
-## O que está incluído
+## Incluído
 
-- Loja de joias banhadas a ouro com tema escuro elegante
-- Categorias: colares, anéis, pingentes, pulseiras e brincos
-- Cards de produtos com vídeos MP4 em vez de screenshots
-- Sistema de carrinho com localStorage
-- Backend `/api/checkout` para criar sessão do Stripe Checkout
-- Páginas de checkout concluído e cancelado
-- Fundo WebGL discreto com React Three Fiber, Three.js e GLSL Shader
-- Transições GSAP
-- Scroll suave com Lenis
-- Animações com Framer Motion
-- Camada WebGPU experimental com fallback automático para WebGL
-- Cursor personalizado sutil
-- Efeitos leves de luz e shader
-- Configuração para Vercel
-
-## Stack
-
-- Next.js
-- React
-- React Three Fiber
-- Three.js
-- GSAP
+- Landing page premium com modelo editorial usando joias negras
+- Fotografias macro geradas para vitrine de produtos
+- Paleta: preto absoluto, grafite, ônix e prata escura
+- Glassmorphism sutil
+- WebGL/Three.js + React Three Fiber
+- GLSL shaders
+- GSAP + ScrollTrigger
 - Lenis
-- GLSL Shaders
 - Framer Motion
-- WebGPU API
-- Stripe
-- TypeScript
+- WebGPU com fallback
+- Vídeos fullscreen
+- Carrinho e checkout
+- Painel admin em `/admin`
+- Edição de produtos, descrições, valores, fotos, vídeos, estoque, tags
+- Edição de contacto, email, WhatsApp, Instagram, Pinterest, TikTok e morada
+- Logs de auditoria
+- MFA
+- RBAC
+- Rate limiting
+- Cookies HttpOnly
+- CSRF
+- Sanitização anti-XSS
+- Queries parametrizadas para banco SQL
+- Sessões administrativas com expiração automática
+- Headers de segurança via middleware
+- Guia Cloudflare WAF em `docs/CLOUDFLARE-WAF.md`
 
-## Como rodar localmente
+## Rodar localmente
 
 ```bash
 npm install
@@ -46,160 +44,74 @@ Abra:
 http://localhost:3000
 ```
 
-## Como editar os produtos
-
-Os produtos ficam em:
+Painel admin:
 
 ```txt
-lib/products.ts
+http://localhost:3000/admin
 ```
 
-Você pode alterar:
-
-- Nome
-- Preço
-- Categoria
-- Descrição
-- Vídeo
-- Estoque
-- Tags
-- Tipo de banho/acabamento
-
-Os preços estão em centavos. Exemplo: `6490` significa `64,90 €`.
-
-## Vídeos dos produtos
-
-Os vídeos ficam em:
+Em desenvolvimento, caso não configure `ADMIN_USERS_JSON`, existe um usuário local:
 
 ```txt
-public/videos
+email: admin@noir.local
+senha: admin123
+MFA: usar secret JBSWY3DPEHPK3PXP no app autenticador
 ```
 
-Arquivos usados pelo projeto:
+Não existe usuário padrão em produção.
 
-```txt
-colar-aurora.mp4
-anel-solar.mp4
-pingente-lua.mp4
-pulseira-celeste.mp4
-brinco-estrela.mp4
-colar-riviera.mp4
-anel-imperial.mp4
-pingente-coracao.mp4
-```
+## Configurar admin em produção
 
-Para colocar vídeos reais, substitua esses arquivos mantendo os mesmos nomes.
-
-## Configurar pagamentos com Stripe
-
-### 1. Criar conta
-
-Crie uma conta em:
-
-```txt
-https://stripe.com
-```
-
-### 2. Pegar a chave secreta
-
-No painel Stripe, acesse:
-
-```txt
-Developers > API keys
-```
-
-Copie a chave secreta de teste, que começa com:
-
-```txt
-sk_test_
-```
-
-### 3. Criar `.env.local`
-
-Na raiz do projeto:
+Gere o hash da senha:
 
 ```bash
-cp .env.example .env.local
+node scripts/hash-password.mjs "sua-senha-forte"
 ```
 
-Depois edite o arquivo:
+Configure na Vercel:
 
 ```env
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-STRIPE_SECRET_KEY=sk_test_SUA_CHAVE_AQUI
+ADMIN_SESSION_SECRET=uma-string-aleatoria-longa
+ADMIN_USERS_JSON=[{"id":"owner","email":"admin@seudominio.com","passwordHash":"HASH_GERADO","role":"super_admin","mfaSecret":"SUA_SECRET_BASE32","enabled":true}]
 ```
 
-### 4. Testar uma compra
+Cargos disponíveis:
 
-Rode:
+- `super_admin`: edita tudo e vê auditoria
+- `editor`: edita produtos
+- `support`: acesso limitado/leitura
 
-```bash
-npm run dev
-```
+## Persistência das edições
 
-Adicione produtos no carrinho e clique em **Finalizar compra**.
-
-Cartão de teste Stripe:
-
-```txt
-4242 4242 4242 4242
-```
-
-Use qualquer data futura e qualquer CVC de 3 números.
-
-### 5. Configurar na Vercel
-
-Depois que subir para GitHub e importar na Vercel, configure as variáveis em:
-
-```txt
-Project Settings > Environment Variables
-```
-
-Variáveis:
+Para admin persistente em produção, conecte um banco Postgres/Neon/Vercel Postgres e configure:
 
 ```env
-NEXT_PUBLIC_SITE_URL=https://seu-dominio.vercel.app
-STRIPE_SECRET_KEY=sk_test_SUA_CHAVE_AQUI
+POSTGRES_URL=sua_url_postgres
 ```
 
-Depois faça o deploy.
+Sem banco, o projeto usa fallback local para desenvolvimento.
 
-### 6. Ir para produção
+## Pagamentos
 
-Quando for vender de verdade:
+Configure:
 
-1. Ative sua conta Stripe.
-2. Troque `sk_test_` por `sk_live_`.
-3. Altere `NEXT_PUBLIC_SITE_URL` para o domínio real.
-4. Opcional: configure webhooks para salvar pedidos em banco de dados, controlar estoque e enviar e-mails.
-
-## Subir para GitHub
-
-```bash
-git init
-git add .
-git commit -m "Site de joias banhadas a ouro"
-git branch -M main
-git remote add origin URL_DO_SEU_REPOSITORIO
-git push -u origin main
+```env
+NEXT_PUBLIC_SITE_URL=https://seu-dominio.com
+STRIPE_SECRET_KEY=sua_chave_secreta
 ```
 
 ## Deploy na Vercel
 
-1. Entre em https://vercel.com
-2. Clique em **Add New Project**
-3. Importe o repositório do GitHub
-4. Adicione as variáveis de ambiente
-5. Clique em **Deploy**
+```bash
+npm run build
+```
 
-## Arquivos principais
+Depois suba para GitHub e importe na Vercel.
+
+## Cloudflare WAF
+
+Veja:
 
 ```txt
-app/page.tsx                  Frontend da loja
-app/api/checkout/route.ts     Backend Stripe Checkout
-app/checkout/sucesso/page.tsx Página de sucesso
-app/checkout/cancelado/page.tsx Página de cancelamento
-app/globals.css               Visual completo
-lib/products.ts               Catálogo de produtos
-public/videos                 Vídeos dos produtos
+docs/CLOUDFLARE-WAF.md
 ```

@@ -2,15 +2,15 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Aurora Joias | Joias banhadas a ouro",
+  title: "Noir Atelier | Alta joalheria em pedras negras",
   description:
-    "Loja elegante de joias banhadas a ouro com colares, anéis, pingentes, pulseiras, brincos e compra segura.",
+    "Site de alta joalheria com estética editorial, pedras negras, prata escura e experiência premium.",
   icons: {
     icon: "/favicon.svg"
   },
   openGraph: {
-    title: "Aurora Joias",
-    description: "Joias banhadas a ouro com experiência premium.",
+    title: "Noir Atelier",
+    description: "Alta joalheria em pedras negras com experiência editorial premium.",
     type: "website"
   }
 };
