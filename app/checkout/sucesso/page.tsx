@@ -5,10 +5,10 @@ export default function SucessoPage() {
     <main className="status-page">
       <section className="status-card">
         <p className="eyebrow">Pedido confirmado</p>
-        <h1>Pagamento recebido com sucesso.</h1>
+        <h1>A sua joia está a caminho.</h1>
         <p>
-          Obrigado pela compra. Em uma loja real, aqui você pode buscar os dados da sessão no Stripe,
-          salvar o pedido em um banco de dados e enviar um e-mail para a cliente.
+          Recebemos o seu pagamento com sucesso. Em breve você receberá a confirmação do pedido
+          e os detalhes de envio no contacto informado durante a compra.
         </p>
         <Link className="button primary" href="/">
           Voltar para a loja

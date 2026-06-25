@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Aurora Joias | Joias banhadas a ouro",
   description:
-    "Loja elegante de joias banhadas a ouro com colares, anéis, pingentes, pulseiras, brincos, carrinho e Stripe Checkout.",
+    "Loja elegante de joias banhadas a ouro com colares, anéis, pingentes, pulseiras, brincos e compra segura.",
   icons: {
     icon: "/favicon.svg"
   },

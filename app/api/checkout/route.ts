@@ -15,10 +15,7 @@ export async function POST(request: Request) {
 
     if (!secretKey) {
       return NextResponse.json(
-        {
-          error:
-            "Pagamento ainda não configurado. Adicione STRIPE_SECRET_KEY no .env.local ou nas variáveis de ambiente da Vercel."
-        },
+        { error: "Checkout temporariamente indisponível. Tente novamente mais tarde." },
         { status: 500 }
       );
     }
@@ -27,7 +24,7 @@ export async function POST(request: Request) {
     const items = body.items;
 
     if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: "Carrinho vazio." }, { status: 400 });
+      return NextResponse.json({ error: "O carrinho está vazio." }, { status: 400 });
     }
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
@@ -56,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     if (lineItems.length === 0) {
-      return NextResponse.json({ error: "Nenhum produto válido no carrinho." }, { status: 400 });
+      return NextResponse.json({ error: "Não foi possível validar os produtos." }, { status: 400 });
     }
 
     const stripe = new Stripe(secretKey);
@@ -86,7 +83,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Não foi possível iniciar o checkout. Verifique a chave Stripe." },
+      { error: "Não foi possível iniciar o checkout neste momento." },
       { status: 500 }
     );
   }

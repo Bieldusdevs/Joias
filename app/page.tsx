@@ -3,6 +3,7 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -25,7 +26,7 @@ const vertexShader = `
   void main() {
     vUv = uv;
     vec3 pos = position;
-    pos.z += sin((position.x + position.y) * 2.0) * 0.015;
+    pos.z += sin((position.x + position.y) * 2.0) * 0.01;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
@@ -61,19 +62,18 @@ const fragmentShader = `
 
   void main() {
     vec2 uv = vUv;
-    vec2 slowUv = uv * 2.4 + vec2(uTime * 0.035, -uTime * 0.025);
-    float n = noise(slowUv);
+    float n = noise(uv * 3.2 + vec2(uTime * 0.025, -uTime * 0.018));
+    float vignette = smoothstep(0.86, 0.18, distance(uv, vec2(0.5)));
+    float mouseLight = smoothstep(0.34, 0.0, distance(uv, uMouse));
+    float diagonal = smoothstep(0.12, 0.82, uv.x + uv.y + sin(uTime * 0.2) * 0.15);
 
-    float vignette = smoothstep(0.92, 0.22, distance(uv, vec2(0.5)));
-    float mouseLight = smoothstep(0.48, 0.0, distance(uv, uMouse));
+    vec3 black = vec3(0.0);
+    vec3 graphite = vec3(0.025, 0.022, 0.019);
+    vec3 gold = vec3(1.0, 0.72, 0.34);
 
-    vec3 blackGold = vec3(0.035, 0.028, 0.022);
-    vec3 deepWine = vec3(0.085, 0.035, 0.05);
-    vec3 gold = vec3(1.0, 0.68, 0.28);
-
-    vec3 color = mix(blackGold, deepWine, uv.y + n * 0.2);
-    color += gold * mouseLight * 0.16;
-    color += gold * n * 0.035;
+    vec3 color = mix(black, graphite, n * 0.55);
+    color += gold * mouseLight * 0.10;
+    color += gold * diagonal * n * 0.018;
     color *= vignette;
 
     gl_FragColor = vec4(color, 1.0);
@@ -108,10 +108,10 @@ export default function Home() {
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.05,
+      duration: 1.12,
       smoothWheel: true,
-      wheelMultiplier: 0.9,
-      lerp: 0.08
+      wheelMultiplier: 0.82,
+      lerp: 0.075
     });
 
     let frame = 0;
@@ -130,25 +130,62 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".reveal",
-        { y: 28, opacity: 0, filter: "blur(10px)" },
+        { y: 34, opacity: 0, filter: "blur(14px)" },
         {
           y: 0,
           opacity: 1,
           filter: "blur(0px)",
-          duration: 1,
-          stagger: 0.08,
+          duration: 1.15,
+          stagger: 0.075,
           ease: "power3.out"
         }
       );
 
-      gsap.to(".orb-spin", {
-        rotate: 360,
-        duration: 36,
-        repeat: -1,
-        ease: "none"
+      gsap.utils.toArray<HTMLElement>(".scroll-rise").forEach((element) => {
+        gsap.fromTo(
+          element,
+          { y: 90, opacity: 0.3 },
+          {
+            y: -10,
+            opacity: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: element,
+              start: "top 92%",
+              end: "bottom 18%",
+              scrub: 1
+            }
+          }
+        );
+      });
+
+      gsap.utils.toArray<HTMLElement>(".metal-sweep").forEach((element) => {
+        gsap.to(element, {
+          backgroundPosition: "220% center",
+          ease: "none",
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.3
+          }
+        });
+      });
+
+      gsap.to(".cinema-video", {
+        scale: 1.08,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".cinema-section",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
       });
     });
 
@@ -228,12 +265,12 @@ export default function Home() {
       const data = (await response.json()) as { url?: string; error?: string };
 
       if (!response.ok || !data.url) {
-        throw new Error(data.error || "Erro ao criar checkout.");
+        throw new Error(data.error || "Não foi possível iniciar o checkout.");
       }
 
       window.location.href = data.url;
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Erro no checkout.");
+      setNotice(error instanceof Error ? error.message : "Não foi possível iniciar o checkout.");
       setCheckoutLoading(false);
     }
   };
@@ -246,70 +283,86 @@ export default function Home() {
 
       <Header cartCount={cartCount} onCartClick={() => setCartOpen(true)} />
 
-      <section className="hero section-pad">
-        <div className="hero-copy">
-          <p className="eyebrow reveal">Joias banhadas a ouro 18k</p>
-          <h1 className="reveal">Brilho elegante para uma loja premium.</h1>
-          <p className="hero-text reveal">
-            Site de vendas com categorias, carrinho funcional, checkout Stripe, fundo WebGL,
-            transições GSAP, scroll Lenis, animações Framer Motion, shader GLSL e camada WebGPU sutil.
-          </p>
-
-          <div className="hero-actions reveal">
-            <a className="button primary" href="#colecao">
-              Ver coleção
-            </a>
-            <a className="button ghost" href="#pagamentos">
-              Configurar pagamentos
-            </a>
+      <section className="hero-cinema">
+        <video
+          className="hero-video"
+          src="/videos/colar-riviera.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+        <div className="hero-noise" />
+        <div className="section-pad hero-inner">
+          <div className="hero-copy">
+            <p className="eyebrow reveal">Aurora Joias · banho de ouro 18k</p>
+            <h1 className="reveal metal-sweep">Joias banhadas a ouro com presença de alta joalharia.</h1>
+            <p className="hero-text reveal">
+              Uma coleção luminosa, minimalista e marcante — criada para transformar o ritual de compra
+              em uma experiência sofisticada, silenciosa e memorável.
+            </p>
+            <div className="hero-actions reveal">
+              <a className="button primary" href="#colecao">
+                Comprar coleção
+              </a>
+              <a className="button ghost" href="#atelier">
+                Ver acabamento 3D
+              </a>
+            </div>
           </div>
 
-          <div className="trust-row reveal">
-            <span>Banho 18k</span>
-            <span>Checkout seguro</span>
-            <span>Pronto para Vercel</span>
+          <div className="hero-sculpture reveal" aria-label="Renderização 3D de joia">
+            <Canvas camera={{ position: [0, 0.28, 4.6], fov: 42 }} dpr={[1, 1.75]}>
+              <JewelryLights />
+              <JewelrySculpture variant="necklace" />
+            </Canvas>
           </div>
-        </div>
-
-        <div className="hero-visual reveal">
-          <div className="orb orb-spin" />
-          <div className="hero-card">
-            <span className="mini-label">Coleção destaque</span>
-            <ProductVideo product={products[0]} compact />
-            <h3>{products[0].name}</h3>
-            <p>{products[0].description}</p>
-            <strong>{money.format(products[0].price / 100)}</strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="marquee" aria-hidden="true">
-        <div>
-          <span>Colares</span>
-          <span>Anéis</span>
-          <span>Pingentes</span>
-          <span>Pulseiras</span>
-          <span>Brincos</span>
-          <span>Banho de ouro 18k</span>
-          <span>Colares</span>
-          <span>Anéis</span>
-          <span>Pingentes</span>
-          <span>Pulseiras</span>
-          <span>Brincos</span>
         </div>
       </section>
 
-      <section id="colecao" className="section-pad collection">
-        <div className="section-heading reveal">
-          <p className="eyebrow">Coleção</p>
-          <h2>Produtos em vídeo, sem screenshots estáticos.</h2>
+      <section id="maison" className="section-pad maison-section spacious">
+        <div className="maison-kicker scroll-rise">01 · Maison</div>
+        <div className="maison-text scroll-rise">
           <p>
-            Os cards usam arquivos MP4 em <code>public/videos</code>. Troque os vídeos demo pelos
-            vídeos reais das suas joias quando quiser.
+            O brilho não precisa gritar. Cada peça da Aurora foi pensada para refletir luz com delicadeza,
+            textura metálica e proporção elegante — do primeiro olhar ao último detalhe.
+          </p>
+        </div>
+        <div className="maison-metrics scroll-rise">
+          <span><strong>18k</strong> banho premium</span>
+          <span><strong>8</strong> peças selecionadas</span>
+          <span><strong>24h</strong> preparação cuidadosa</span>
+        </div>
+      </section>
+
+      <section className="cinema-section">
+        <video
+          className="cinema-video"
+          src="/videos/pingente-coracao.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+        <div className="cinema-overlay">
+          <p className="eyebrow scroll-rise">Filme da coleção</p>
+          <h2 className="scroll-rise metal-sweep">Reflexos dourados em movimento fullscreen.</h2>
+        </div>
+      </section>
+
+      <section id="colecao" className="section-pad collection spacious">
+        <div className="section-heading scroll-rise">
+          <p className="eyebrow">02 · Coleção</p>
+          <h2 className="metal-sweep">Escolha por categoria.</h2>
+          <p>
+            Colares, anéis, pingentes, pulseiras e brincos com visual limpo, acabamento luminoso
+            e vídeos de produto para uma compra mais sensorial.
           </p>
         </div>
 
-        <div className="category-row reveal">
+        <div className="category-row scroll-rise">
           {categories.map((category) => (
             <button
               key={category.id}
@@ -334,37 +387,60 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <section className="section-pad editorial">
-        <div className="section-heading reveal">
-          <p className="eyebrow">Experiência visual</p>
-          <h2>Stack premium para vender com impacto.</h2>
+      <section id="atelier" className="section-pad atelier-section spacious">
+        <div className="section-heading scroll-rise">
+          <p className="eyebrow">03 · Renderizações 3D</p>
+          <h2 className="metal-sweep">Metal, reflexo e volume.</h2>
+          <p>
+            Modelos 3D procedurais renderizados em WebGL para reforçar a sensação de profundidade,
+            brilho e materialidade das joias.
+          </p>
         </div>
 
-        <div className="feature-grid">
-          <Feature title="Fundo WebGL discreto" text="React Three Fiber, Three.js e GLSL Shaders para luz e textura elegante." />
-          <Feature title="Transições GSAP" text="Entrada suave, blur refinado e movimento de elementos hero." />
-          <Feature title="Lenis + Framer Motion" text="Scroll fluido, filtros animados, carrinho com spring e cards interativos." />
-          <Feature title="WebGPU com fallback" text="Camada luminosa experimental quando o navegador suporta WebGPU." />
+        <div className="sculpture-grid">
+          <SculptureCard title="Anéis" variant="ring" />
+          <SculptureCard title="Colares" variant="necklace" />
+          <SculptureCard title="Pingentes" variant="pendant" />
         </div>
       </section>
 
-      <section id="pagamentos" className="section-pad payments">
-        <div className="payment-card reveal">
-          <p className="eyebrow">Pagamentos</p>
-          <h2>Backend Stripe Checkout já incluído.</h2>
+      <section className="section-pad craft-section spacious">
+        <div className="craft-panel scroll-rise">
+          <p className="eyebrow">04 · Acabamento</p>
+          <h2 className="metal-sweep">Glassmorphism sutil, preto absoluto e luz metálica.</h2>
           <p>
-            O botão de finalizar compra chama <code>/api/checkout</code>, valida os produtos no servidor
-            e cria uma sessão segura do Stripe Checkout. Esse backend roda como API Route do Next.js,
-            pronto para Vercel.
+            O desenho visual valoriza contraste, espaços amplos e reflexos dourados. A interface fica
+            discreta para que as peças sejam protagonistas da experiência.
           </p>
+        </div>
+        <div className="craft-list">
+          <Feature title="Banho luminoso" text="Superfícies douradas com aparência polida e acabamento sofisticado." />
+          <Feature title="Compra fluida" text="Carrinho rápido, checkout seguro e navegação sem fricção." />
+          <Feature title="Experiência cinematográfica" text="Vídeos fullscreen, movimento por scroll e profundidade WebGL." />
+          <Feature title="Entrega com cuidado" text="Peças preparadas para envio com atenção à apresentação e conservação." />
+        </div>
+      </section>
 
-          <ol>
-            <li>Crie uma conta em <strong>stripe.com</strong>.</li>
-            <li>Copie sua chave secreta de teste em <strong>Developers → API keys</strong>.</li>
-            <li>Crie <code>.env.local</code> com <code>STRIPE_SECRET_KEY</code>.</li>
-            <li>Na Vercel, adicione a mesma variável em <strong>Project Settings → Environment Variables</strong>.</li>
-            <li>Em produção, troque <code>sk_test</code> por <code>sk_live</code> e use seu domínio real.</li>
-          </ol>
+      <section className="fullscreen-split">
+        <div className="split-video-wrap">
+          <video
+            className="split-video"
+            src="/videos/anel-imperial.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        </div>
+        <div className="split-copy scroll-rise">
+          <p className="eyebrow">05 · Serviço</p>
+          <h2 className="metal-sweep">Compra segura, apresentação premium.</h2>
+          <p>
+            Pagamento protegido, confirmação imediata e embalagem pensada para preservar o brilho da peça.
+            Uma loja pronta para receber clientes com aparência de marca estabelecida.
+          </p>
+          <a className="button primary" href="#colecao">Ver joias disponíveis</a>
         </div>
       </section>
 
@@ -391,27 +467,23 @@ function Header({
   cartCount: number;
   onCartClick: () => void;
 }) {
-  const webgpu = useWebGPUSupport();
-
   return (
     <header className="site-header">
       <a className="brand" href="#" aria-label="Aurora Joias">
         <span>A</span>
-        Aurora Joias
+        Aurora
       </a>
 
       <nav>
+        <a href="#maison">Maison</a>
         <a href="#colecao">Coleção</a>
-        <a href="#pagamentos">Pagamentos</a>
+        <a href="#atelier">Atelier</a>
       </nav>
 
-      <div className="header-actions">
-        <span className="webgpu-pill">{webgpu}</span>
-        <button className="cart-button" onClick={onCartClick}>
-          Carrinho
-          <b>{cartCount}</b>
-        </button>
-      </div>
+      <button className="cart-button" onClick={onCartClick}>
+        Sacola
+        <b>{cartCount}</b>
+      </button>
     </header>
   );
 }
@@ -420,11 +492,11 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
   return (
     <motion.article
       layout
-      className="product-card reveal"
+      className="product-card scroll-rise"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      whileHover={{ y: -6 }}
+      whileHover={{ y: -8 }}
       transition={{ duration: 0.35 }}
     >
       <ProductVideo product={product} />
@@ -447,23 +519,17 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
       </div>
 
       <button className="button full" onClick={onAdd}>
-        Adicionar ao carrinho
+        Adicionar à sacola
       </button>
     </motion.article>
   );
 }
 
-function ProductVideo({
-  product,
-  compact = false
-}: {
-  product: Product;
-  compact?: boolean;
-}) {
+function ProductVideo({ product }: { product: Product }) {
   const [failed, setFailed] = useState(false);
 
   return (
-    <div className={compact ? "video-box compact" : "video-box"}>
+    <div className="video-box">
       {!failed ? (
         <video
           src={product.video}
@@ -477,7 +543,7 @@ function ProductVideo({
       ) : (
         <div className="video-fallback">
           <span>{product.name}</span>
-          <small>Adicione o vídeo em {product.video}</small>
+          <small>Pré-visualização cinematográfica</small>
         </div>
       )}
       <div className="video-glow" />
@@ -514,7 +580,7 @@ function CartDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            aria-label="Fechar carrinho"
+            aria-label="Fechar sacola"
           />
 
           <motion.aside
@@ -526,8 +592,8 @@ function CartDrawer({
           >
             <div className="drawer-head">
               <div>
-                <p className="eyebrow">Carrinho</p>
-                <h2>Sua seleção</h2>
+                <p className="eyebrow">Sacola</p>
+                <h2>A sua seleção</h2>
               </div>
               <button className="icon-button" onClick={onClose} aria-label="Fechar">
                 ×
@@ -536,9 +602,9 @@ function CartDrawer({
 
             {lines.length === 0 ? (
               <div className="empty-cart">
-                <p>O seu carrinho ainda está vazio.</p>
+                <p>A sua sacola ainda está vazia.</p>
                 <a className="button ghost" href="#colecao" onClick={onClose}>
-                  Ver coleção
+                  Explorar coleção
                 </a>
               </div>
             ) : (
@@ -570,13 +636,13 @@ function CartDrawer({
                 </div>
 
                 <button className="button primary full" onClick={onCheckout} disabled={loading}>
-                  {loading ? "A abrir checkout..." : "Finalizar compra"}
+                  {loading ? "A abrir pagamento..." : "Finalizar compra"}
                 </button>
 
                 {notice ? <p className="checkout-error">{notice}</p> : null}
 
                 <p className="checkout-note">
-                  Pagamento processado pelo Stripe Checkout. Em teste, use o cartão 4242 4242 4242 4242.
+                  Pagamento protegido. Dados financeiros processados em ambiente seguro.
                 </p>
               </>
             )}
@@ -590,8 +656,8 @@ function CartDrawer({
 function Feature({ title, text }: { title: string; text: string }) {
   return (
     <motion.div
-      className="feature reveal"
-      whileHover={{ y: -5, borderColor: "rgba(238, 190, 113, 0.55)" }}
+      className="feature scroll-rise"
+      whileHover={{ y: -6, borderColor: "rgba(245, 210, 145, 0.46)" }}
     >
       <span />
       <h3>{title}</h3>
@@ -600,11 +666,123 @@ function Feature({ title, text }: { title: string; text: string }) {
   );
 }
 
+function SculptureCard({
+  title,
+  variant
+}: {
+  title: string;
+  variant: "ring" | "necklace" | "pendant";
+}) {
+  return (
+    <motion.div className="sculpture-card scroll-rise" whileHover={{ y: -8 }}>
+      <Canvas camera={{ position: [0, 0.25, 4.5], fov: 42 }} dpr={[1, 1.8]}>
+        <JewelryLights />
+        <JewelrySculpture variant={variant} />
+      </Canvas>
+      <div className="sculpture-label">
+        <p className="eyebrow">Render 3D</p>
+        <h3>{title}</h3>
+      </div>
+    </motion.div>
+  );
+}
+
+function JewelryLights() {
+  return (
+    <>
+      <color attach="background" args={["#000000"]} />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[3, 4, 3]} intensity={3.4} color="#ffe1a0" />
+      <directionalLight position={[-4, 1, 2]} intensity={1.6} color="#ffffff" />
+      <pointLight position={[0, -1.8, 2.6]} intensity={2.2} color="#c98b3c" />
+    </>
+  );
+}
+
+function JewelrySculpture({ variant }: { variant: "ring" | "necklace" | "pendant" }) {
+  const group = useRef<THREE.Group>(null);
+  const gold = "#f4c26e";
+
+  useFrame(({ clock }) => {
+    if (!group.current) return;
+    group.current.rotation.y = clock.elapsedTime * 0.42;
+    group.current.rotation.x = Math.sin(clock.elapsedTime * 0.55) * 0.1;
+  });
+
+  return (
+    <group ref={group}>
+      {variant === "ring" ? (
+        <>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[1.06, 0.12, 48, 160]} />
+            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.16} clearcoat={1} clearcoatRoughness={0.08} />
+          </mesh>
+          <mesh position={[0, 0.98, 0]} rotation={[0.7, 0.2, 0.8]}>
+            <octahedronGeometry args={[0.28, 2]} />
+            <meshPhysicalMaterial color="#fff1c6" metalness={0.2} roughness={0.05} transmission={0.15} clearcoat={1} />
+          </mesh>
+        </>
+      ) : null}
+
+      {variant === "necklace" ? (
+        <>
+          <mesh scale={[1.12, 1.42, 1]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[1.05, 0.035, 24, 180]} />
+            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.18} clearcoat={1} />
+          </mesh>
+          {Array.from({ length: 18 }).map((_, index) => {
+            const angle = (index / 17) * Math.PI + Math.PI;
+            const x = Math.cos(angle) * 1.18;
+            const y = Math.sin(angle) * 1.48 - 0.1;
+            return (
+              <mesh key={index} position={[x, y, 0.02]}>
+                <sphereGeometry args={[0.055, 24, 24]} />
+                <meshPhysicalMaterial color="#ffe1a0" metalness={1} roughness={0.12} clearcoat={1} />
+              </mesh>
+            );
+          })}
+          <mesh position={[0, -1.56, 0.05]} rotation={[0.4, 0.2, 0.2]}>
+            <dodecahedronGeometry args={[0.22, 1]} />
+            <meshPhysicalMaterial color="#fff0bf" metalness={0.65} roughness={0.08} clearcoat={1} />
+          </mesh>
+        </>
+      ) : null}
+
+      {variant === "pendant" ? (
+        <>
+          <mesh position={[0, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.42, 0.03, 24, 90]} />
+            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.14} clearcoat={1} />
+          </mesh>
+          <mesh position={[0, -0.1, 0]} rotation={[0.25, 0, Math.PI / 4]}>
+            <boxGeometry args={[0.9, 0.9, 0.16]} />
+            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.13} clearcoat={1} />
+          </mesh>
+          <mesh position={[0, -0.1, 0.11]}>
+            <sphereGeometry args={[0.18, 32, 32]} />
+            <meshPhysicalMaterial color="#fff4d2" metalness={0.35} roughness={0.04} clearcoat={1} />
+          </mesh>
+        </>
+      ) : null}
+    </group>
+  );
+}
+
 function Footer() {
   return (
     <footer className="footer">
-      <p>Aurora Joias © 2026</p>
-      <p>Loja demo pronta para GitHub, Vercel e Stripe.</p>
+      <div>
+        <a className="brand footer-brand" href="#">
+          <span>A</span>
+          Aurora
+        </a>
+        <p>Joias banhadas a ouro com experiência digital premium.</p>
+      </div>
+      <div className="footer-links">
+        <a href="#maison">Maison</a>
+        <a href="#colecao">Coleção</a>
+        <a href="#atelier">Atelier</a>
+      </div>
     </footer>
   );
 }
@@ -720,12 +898,13 @@ function WebGPUSheen() {
           fn fs(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
             let uv = coord.xy / vec2<f32>(uniforms.width, uniforms.height);
             let center = vec2<f32>(
-              0.72 + sin(uniforms.time * 0.16) * 0.12,
-              0.24 + cos(uniforms.time * 0.11) * 0.10
+              0.68 + sin(uniforms.time * 0.13) * 0.18,
+              0.30 + cos(uniforms.time * 0.10) * 0.12
             );
             let d = distance(uv, center);
-            let glow = max(0.0, 0.42 - d) * 0.105;
-            return vec4<f32>(1.0, 0.68, 0.26, glow);
+            let line = smoothstep(0.012, 0.0, abs((uv.x + uv.y) - (0.72 + sin(uniforms.time * 0.18) * 0.25)));
+            let glow = max(0.0, 0.38 - d) * 0.085 + line * 0.035;
+            return vec4<f32>(1.0, 0.72, 0.32, glow);
           }
         `
       });
@@ -859,30 +1038,4 @@ function CustomCursor() {
   }, []);
 
   return <div ref={cursor} className="custom-cursor" />;
-}
-
-function useWebGPUSupport() {
-  const [label, setLabel] = useState("WebGPU verificando");
-
-  useEffect(() => {
-    const check = async () => {
-      const gpu = (navigator as Navigator & { gpu?: any }).gpu;
-
-      if (!gpu) {
-        setLabel("WebGL fallback");
-        return;
-      }
-
-      try {
-        const adapter = await gpu.requestAdapter();
-        setLabel(adapter ? "WebGPU ativo" : "WebGL fallback");
-      } catch {
-        setLabel("WebGL fallback");
-      }
-    };
-
-    check();
-  }, []);
-
-  return label;
 }
