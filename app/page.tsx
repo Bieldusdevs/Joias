@@ -315,13 +315,13 @@ export default function Home() {
                 Comprar coleção
               </a>
               <a className="button ghost" href="#atelier">
-                Ver atelier WebGL
+                Ver ensaio editorial
               </a>
             </div>
           </div>
 
           <div className="hero-sculpture reveal" aria-label="Editorial de alta joalheria">
-            <img src="/editorial/hero-model.png" alt="Modelo editorial usando colar e brincos de pedras negras" />
+            <img src={settings.heroImage || "/editorial/hero-model.png"} alt="Modelo editorial usando colar e brincos de pedras negras" />
             <div className="hero-portrait-shine" />
           </div>
         </div>
@@ -395,18 +395,18 @@ export default function Home() {
 
       <section id="atelier" className="section-pad atelier-section spacious">
         <div className="section-heading scroll-rise">
-          <p className="eyebrow">03 · Renderizações 3D</p>
-          <h2 className="metal-sweep">Metal, reflexo e volume.</h2>
+          <p className="eyebrow">03 · Ensaio editorial</p>
+          <h2 className="metal-sweep">Fotografia macro, reflexo e textura.</h2>
           <p>
-            Modelos 3D procedurais renderizados em WebGL para reforçar a sensação de profundidade,
-            brilho e materialidade das joias.
+            A experiência agora destaca fotografias reais/editoriais,
+            macros ultra detalhadas e imagens que podem ser trocadas diretamente pelo painel admin.
           </p>
         </div>
 
         <div className="sculpture-grid">
-          <SculptureCard title="Colar Noir" variant="necklace" />
-          <SculptureCard title="Pingente Eclipse" variant="pendant" />
-          <SculptureCard title="Brincos Onyx" variant="earrings" />
+          {(catalog.length ? catalog.slice(0, 3) : defaultProducts.slice(0, 3)).map((product) => (
+            <PhotoEditorialCard key={product.id} product={product} />
+          ))}
         </div>
       </section>
 
@@ -666,113 +666,16 @@ function Feature({ title, text }: { title: string; text: string }) {
   );
 }
 
-function SculptureCard({
-  title,
-  variant
-}: {
-  title: string;
-  variant: "necklace" | "pendant" | "earrings";
-}) {
+function PhotoEditorialCard({ product }: { product: Product }) {
   return (
-    <motion.div className="sculpture-card scroll-rise" whileHover={{ y: -8 }}>
-      <Canvas camera={{ position: [0, 0.25, 4.5], fov: 42 }} dpr={[1, 1.8]}>
-        <JewelryLights />
-        <JewelrySculpture variant={variant} />
-      </Canvas>
+    <motion.div className="sculpture-card photo-editorial-card scroll-rise" whileHover={{ y: -8 }}>
+      <img src={product.image} alt={product.name} />
       <div className="sculpture-label">
-        <p className="eyebrow">Render 3D</p>
-        <h3>{title}</h3>
+        <p className="eyebrow">Fotografia editorial</p>
+        <h3>{product.name}</h3>
+        <p>{product.coating}</p>
       </div>
     </motion.div>
-  );
-}
-
-function JewelryLights() {
-  return (
-    <>
-      <color attach="background" args={["#000000"]} />
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[3, 4, 3]} intensity={3.4} color="#ffe1a0" />
-      <directionalLight position={[-4, 1, 2]} intensity={1.6} color="#ffffff" />
-      <pointLight position={[0, -1.8, 2.6]} intensity={2.2} color="#c98b3c" />
-    </>
-  );
-}
-
-function JewelrySculpture({ variant }: { variant: "necklace" | "pendant" | "earrings" }) {
-  const group = useRef<THREE.Group>(null);
-  const gold = "#f4c26e";
-
-  useFrame(({ clock }) => {
-    if (!group.current) return;
-    group.current.rotation.y = clock.elapsedTime * 0.42;
-    group.current.rotation.x = Math.sin(clock.elapsedTime * 0.55) * 0.1;
-  });
-
-  return (
-    <group ref={group}>
-      {variant === "necklace" ? (
-        <>
-          <mesh scale={[1.12, 1.42, 1]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[1.05, 0.035, 24, 180]} />
-            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.18} clearcoat={1} />
-          </mesh>
-          {Array.from({ length: 18 }).map((_, index) => {
-            const angle = (index / 17) * Math.PI + Math.PI;
-            const x = Math.cos(angle) * 1.18;
-            const y = Math.sin(angle) * 1.48 - 0.1;
-            return (
-              <mesh key={index} position={[x, y, 0.02]}>
-                <sphereGeometry args={[0.055, 24, 24]} />
-                <meshPhysicalMaterial color="#ffe1a0" metalness={1} roughness={0.12} clearcoat={1} />
-              </mesh>
-            );
-          })}
-          <mesh position={[0, -1.56, 0.05]} rotation={[0.4, 0.2, 0.2]}>
-            <dodecahedronGeometry args={[0.22, 1]} />
-            <meshPhysicalMaterial color="#fff0bf" metalness={0.65} roughness={0.08} clearcoat={1} />
-          </mesh>
-        </>
-      ) : null}
-
-      {variant === "pendant" ? (
-        <>
-          <mesh position={[0, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[0.42, 0.03, 24, 90]} />
-            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.14} clearcoat={1} />
-          </mesh>
-          <mesh position={[0, -0.1, 0]} rotation={[0.25, 0, Math.PI / 4]}>
-            <boxGeometry args={[0.9, 0.9, 0.16]} />
-            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.13} clearcoat={1} />
-          </mesh>
-          <mesh position={[0, -0.1, 0.11]}>
-            <sphereGeometry args={[0.18, 32, 32]} />
-            <meshPhysicalMaterial color="#fff4d2" metalness={0.35} roughness={0.04} clearcoat={1} />
-          </mesh>
-        </>
-      ) : null}
-
-      {variant === "earrings" ? (
-        <>
-          <mesh position={[-0.46, 0.48, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[0.2, 0.022, 24, 80]} />
-            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.14} clearcoat={1} />
-          </mesh>
-          <mesh position={[0.46, 0.48, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[0.2, 0.022, 24, 80]} />
-            <meshPhysicalMaterial color={gold} metalness={1} roughness={0.14} clearcoat={1} />
-          </mesh>
-          <mesh position={[-0.46, -0.12, 0]} rotation={[0.35, 0.25, 0.2]}>
-            <octahedronGeometry args={[0.34, 2]} />
-            <meshPhysicalMaterial color="#0b0b0d" metalness={0.6} roughness={0.08} clearcoat={1} />
-          </mesh>
-          <mesh position={[0.46, -0.12, 0]} rotation={[0.35, -0.25, -0.2]}>
-            <octahedronGeometry args={[0.34, 2]} />
-            <meshPhysicalMaterial color="#0b0b0d" metalness={0.6} roughness={0.08} clearcoat={1} />
-          </mesh>
-        </>
-      ) : null}
-    </group>
   );
 }
 

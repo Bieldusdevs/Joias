@@ -178,6 +178,52 @@ export default function AdminPage() {
     setSelectedId(next[0]?.id || "");
   }
 
+  function readImageFile(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      if (!file.type.startsWith("image/")) {
+        reject(new Error("Selecione um arquivo de imagem."));
+        return;
+      }
+      if (file.size > 900_000) {
+        reject(new Error("Use uma imagem com até 900 KB para manter o site rápido."));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function changeProductPhoto(id: string, event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const image = await readImageFile(file);
+      updateProduct(id, { image });
+      setStatus("Foto do produto carregada. Clique em Guardar produtos para publicar.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Erro ao trocar foto.");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  async function changeHeroPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const heroImage = await readImageFile(file);
+      setSettings((current) => ({ ...current, heroImage }));
+      setStatus("Foto principal carregada. Clique em Guardar para publicar.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Erro ao trocar foto principal.");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+
   if (loading) {
     return <main className="admin-shell"><p className="eyebrow">Admin</p><h1>A carregar painel.</h1></main>;
   }
@@ -263,7 +309,8 @@ export default function AdminPage() {
               <label>Preço em cêntimos<input value={selectedProduct.price} onChange={(event) => updateProduct(selectedProduct.id, { price: Number(event.target.value) })} type="number" disabled={!canEditProducts} /></label>
               <label>Estoque<input value={selectedProduct.stock} onChange={(event) => updateProduct(selectedProduct.id, { stock: Number(event.target.value) })} type="number" disabled={!canEditProducts} /></label>
               <label>Acabamento<input value={selectedProduct.coating} onChange={(event) => updateProduct(selectedProduct.id, { coating: event.target.value })} disabled={!canEditProducts} /></label>
-              <label className="wide">Foto do produto<input value={selectedProduct.image} onChange={(event) => updateProduct(selectedProduct.id, { image: event.target.value })} disabled={!canEditProducts} /></label>
+              <label className="wide">Foto do produto — URL, caminho ou imagem carregada<input value={selectedProduct.image} onChange={(event) => updateProduct(selectedProduct.id, { image: event.target.value })} disabled={!canEditProducts} /></label>
+              <label className="wide">Trocar foto do produto<input type="file" accept="image/*" onChange={(event) => changeProductPhoto(selectedProduct.id, event)} disabled={!canEditProducts} /></label>
               <label className="wide">Vídeo do produto<input value={selectedProduct.video} onChange={(event) => updateProduct(selectedProduct.id, { video: event.target.value })} disabled={!canEditProducts} /></label>
               <label className="wide">Descrição<textarea value={selectedProduct.description} onChange={(event) => updateProduct(selectedProduct.id, { description: event.target.value })} disabled={!canEditProducts} /></label>
               <label className="wide">Tags separadas por vírgula<input value={selectedProduct.tags.join(", ")} onChange={(event) => updateProduct(selectedProduct.id, { tags: event.target.value.split(",").map((tag) => tag.trim()).filter(Boolean) })} disabled={!canEditProducts} /></label>
@@ -293,6 +340,12 @@ export default function AdminPage() {
             <label>Morada<input value={settings.address} onChange={(event) => setSettings({ ...settings, address: event.target.value })} disabled={!canEditSettings} /></label>
             <label className="wide">Título da home<input value={settings.heroTitle} onChange={(event) => setSettings({ ...settings, heroTitle: event.target.value })} disabled={!canEditSettings} /></label>
             <label className="wide">Subtítulo da home<textarea value={settings.heroSubtitle} onChange={(event) => setSettings({ ...settings, heroSubtitle: event.target.value })} disabled={!canEditSettings} /></label>
+            <label className="wide">Foto principal da home<input value={settings.heroImage} onChange={(event) => setSettings({ ...settings, heroImage: event.target.value })} disabled={!canEditSettings} /></label>
+            <label className="wide">Trocar foto principal<input type="file" accept="image/*" onChange={changeHeroPhoto} disabled={!canEditSettings} /></label>
+            <div className="admin-preview wide">
+              <img src={settings.heroImage} alt="Foto principal" />
+              <div><p className="eyebrow">Preview da home</p><h3>{settings.brandName}</h3><p>{settings.heroTitle}</p></div>
+            </div>
           </div>
         </section>
 

@@ -87,7 +87,7 @@ export function validateProduct(input: unknown): Product {
     description: sanitizeText(raw.description, 700),
     coating: sanitizeText(raw.coating, 160),
     video: sanitizeUrl(raw.video, 500),
-    image: sanitizeUrl(raw.image, 500) || "/editorial/macro-necklace.png",
+    image: sanitizeUrl(raw.image, 1200000) || "/editorial/macro-necklace.png",
     tags: sanitizeTags(raw.tags),
     stock: Math.max(0, Math.min(9999, Number(raw.stock || 0))),
     featured: Boolean(raw.featured)
@@ -100,6 +100,7 @@ export function validateSettings(input: unknown): SiteSettings {
     brandName: sanitizeText(raw.brandName, 80) || defaultSettings.brandName,
     heroTitle: sanitizeText(raw.heroTitle, 180) || defaultSettings.heroTitle,
     heroSubtitle: sanitizeText(raw.heroSubtitle, 420) || defaultSettings.heroSubtitle,
+    heroImage: sanitizeUrl(raw.heroImage, 1200000) || defaultSettings.heroImage,
     contactEmail: sanitizeText(raw.contactEmail, 160),
     contactPhone: sanitizeText(raw.contactPhone, 80),
     whatsapp: sanitizeUrl(raw.whatsapp, 300),

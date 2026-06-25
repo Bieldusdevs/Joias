@@ -19,6 +19,7 @@ export type SiteSettings = {
   brandName: string;
   heroTitle: string;
   heroSubtitle: string;
+  heroImage: string;
   contactEmail: string;
   contactPhone: string;
   whatsapp: string;
@@ -42,6 +43,7 @@ export const defaultSettings: SiteSettings = {
   heroTitle: "Alta joalheria em pedras negras.",
   heroSubtitle:
     "Uma maison digital de luxo sombrio, onde ônix, prata escura e luz cinematográfica revelam peças raras com silêncio, mistério e precisão editorial.",
+  heroImage: "/editorial/hero-model.png",
   contactEmail: "concierge@noiratelier.com",
   contactPhone: "+351 900 000 000",
   whatsapp: "https://wa.me/351900000000",

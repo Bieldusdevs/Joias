@@ -11,7 +11,14 @@ export function sanitizeText(value: unknown, maxLength = 600) {
 export function sanitizeUrl(value: unknown, maxLength = 800) {
   const text = sanitizeText(value, maxLength);
   if (!text) return "";
-  if (text.startsWith("/") || text.startsWith("https://") || text.startsWith("http://") || text.startsWith("mailto:") || text.startsWith("tel:")) {
+  if (
+    text.startsWith("/") ||
+    text.startsWith("https://") ||
+    text.startsWith("http://") ||
+    text.startsWith("mailto:") ||
+    text.startsWith("tel:") ||
+    text.startsWith("data:image/")
+  ) {
     return text;
   }
   return "";
