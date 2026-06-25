@@ -1,0 +1,14 @@
+<svg width="220" height="52" viewBox="0 0 220 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="52" height="52" rx="18" fill="#0B0705"/>
+  <path d="M26 8L42 22L26 46L10 22L26 8Z" fill="url(#g)"/>
+  <path d="M10 22H42M19 22L26 46L33 22M19 22L26 8L33 22" stroke="#170C04" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="65" y="31" fill="#FFF7EA" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="-1">Aurora Joias</text>
+  <text x="66" y="45" fill="#E9BE73" font-family="Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="2">BANHADAS A OURO</text>
+  <defs>
+    <linearGradient id="g" x1="10" y1="8" x2="44" y2="45" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF2BF"/>
+      <stop offset="0.46" stop-color="#EEBE71"/>
+      <stop offset="1" stop-color="#B8792E"/>
+    </linearGradient>
+  </defs>
+</svg>
