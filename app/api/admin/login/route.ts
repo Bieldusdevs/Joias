@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       role: "support",
       action: "login_failed",
       resource: "admin_session",
-      metadata: { reason: "invalid_credentials_or_mfa" },
+      metadata: { reason: "invalid_credentials" },
       ip
     });
     return NextResponse.json({ error: "Credenciais inválidas." }, { status: 401 });

@@ -25,7 +25,6 @@ export default function AdminPage() {
   const [csrfToken, setCsrfToken] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
   const [products, setProducts] = useState<Product[]>(defaultProducts);
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -90,7 +89,7 @@ export default function AdminPage() {
     const response = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, mfaCode })
+      body: JSON.stringify({ email, password })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -99,7 +98,6 @@ export default function AdminPage() {
     }
     setUser(data.user);
     setPassword("");
-    setMfaCode("");
     await loadCsrf();
     await loadContent();
     await loadAudit();
@@ -234,7 +232,7 @@ export default function AdminPage() {
         <form className="admin-login-card" onSubmit={login}>
           <p className="eyebrow">Noir Atelier · Administração</p>
           <h1>Acesso reservado.</h1>
-          <p>Entre com credenciais administrativas e código MFA para gerir catálogo, contactos, redes sociais e auditoria.</p>
+          <p>Entre com email e senha para gerir catálogo, contactos, redes sociais e auditoria.</p>
           <label>
             Email
             <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="username" required />
@@ -242,10 +240,6 @@ export default function AdminPage() {
           <label>
             Palavra-passe
             <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" required />
-          </label>
-          <label>
-            Código MFA
-            <input value={mfaCode} onChange={(event) => setMfaCode(event.target.value)} inputMode="numeric" maxLength={6} autoComplete="one-time-code" required />
           </label>
           <button className="button primary full" type="submit">Entrar</button>
           {status ? <p className="admin-status">{status}</p> : null}

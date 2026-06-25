@@ -1,14 +1,14 @@
 # Noir Atelier — alta joalheria editorial premium
 
-Site completo de joias de luxo com estética editorial, atmosfera sofisticada e painel administrativo seguro.
+Site completo de joias de luxo com estética editorial, atmosfera sofisticada e painel administrativo fácil de usar.
 
 ## Incluído
 
 - Landing page premium com modelo editorial usando joias negras
-- Fotografias macro geradas para vitrine de produtos
+- Fotografias macro para vitrine de produtos
 - Paleta: preto absoluto, grafite, ônix e prata escura
 - Glassmorphism sutil
-- WebGL/Three.js + React Three Fiber
+- WebGL/Three.js + React Three Fiber para fundo e efeitos visuais
 - GLSL shaders
 - GSAP + ScrollTrigger
 - Lenis
@@ -17,11 +17,12 @@ Site completo de joias de luxo com estética editorial, atmosfera sofisticada e 
 - Vídeos fullscreen
 - Carrinho e checkout
 - Painel admin em `/admin`
-- Edição de produtos, descrições, valores, fotos, vídeos, estoque, tags
+- Edição de produtos, descrições, valores, fotos, vídeos, estoque e tags
 - Edição de contacto, email, WhatsApp, Instagram, Pinterest, TikTok e morada
+- Upload/troca de foto dos produtos pelo painel
+- Upload/troca da foto principal da home pelo painel
 - Logs de auditoria
-- MFA
-- RBAC
+- RBAC/cargos administrativos
 - Rate limiting
 - Cookies HttpOnly
 - CSRF
@@ -29,7 +30,10 @@ Site completo de joias de luxo com estética editorial, atmosfera sofisticada e 
 - Queries parametrizadas para banco SQL
 - Sessões administrativas com expiração automática
 - Headers de segurança via middleware
-- Guia Cloudflare WAF em `docs/CLOUDFLARE-WAF.md`
+
+## WAF
+
+O WAF/Cloudflare foi desativado/removido do projeto. O site não depende de configuração WAF para funcionar.
 
 ## Rodar localmente
 
@@ -50,12 +54,11 @@ Painel admin:
 http://localhost:3000/admin
 ```
 
-Em desenvolvimento, caso não configure `ADMIN_USERS_JSON`, existe um usuário local:
+Em desenvolvimento, caso não configure `ADMIN_USERS_JSON`, existe um usuário local simples:
 
 ```txt
 email: admin@noir.local
 senha: admin123
-MFA: usar secret JBSWY3DPEHPK3PXP no app autenticador
 ```
 
 Não existe usuário padrão em produção.
@@ -72,7 +75,7 @@ Configure na Vercel:
 
 ```env
 ADMIN_SESSION_SECRET=uma-string-aleatoria-longa
-ADMIN_USERS_JSON=[{"id":"owner","email":"admin@seudominio.com","passwordHash":"HASH_GERADO","role":"super_admin","mfaSecret":"SUA_SECRET_BASE32","enabled":true}]
+ADMIN_USERS_JSON=[{"id":"owner","email":"admin@seudominio.com","passwordHash":"HASH_GERADO","role":"super_admin","enabled":true}]
 ```
 
 Cargos disponíveis:
@@ -80,6 +83,15 @@ Cargos disponíveis:
 - `super_admin`: edita tudo e vê auditoria
 - `editor`: edita produtos
 - `support`: acesso limitado/leitura
+
+## MFA opcional
+
+O login está facilitado por padrão com email e senha. Se quiser ativar MFA no futuro:
+
+```env
+ADMIN_REQUIRE_MFA=true
+ADMIN_USERS_JSON=[{"id":"owner","email":"admin@seudominio.com","passwordHash":"HASH_GERADO","role":"super_admin","mfaSecret":"SUA_SECRET_BASE32","enabled":true}]
+```
 
 ## Persistência das edições
 
@@ -107,11 +119,3 @@ npm run build
 ```
 
 Depois suba para GitHub e importe na Vercel.
-
-## Cloudflare WAF
-
-Veja:
-
-```txt
-docs/CLOUDFLARE-WAF.md
-```
