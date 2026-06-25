@@ -1,6 +1,4 @@
 import { Cursor } from '@/app/components/Cursor'
-import { IntroExperience } from '@/app/components/IntroExperience'
-import { Loader } from '@/app/components/Loader'
 import { LuxuryStore } from '@/app/components/LuxuryStore'
 
 export default function Home() {
@@ -20,8 +18,6 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Loader />
-      <IntroExperience />
       <Cursor />
       <LuxuryStore />
     </>
