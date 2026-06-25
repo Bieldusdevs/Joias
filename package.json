@@ -14,6 +14,7 @@
     "@prisma/client": "latest",
     "@sanity/client": "latest",
     "@stripe/stripe-js": "latest",
+    "@vercel/postgres": "latest",
     "clsx": "latest",
     "framer-motion": "latest",
     "gsap": "latest",
